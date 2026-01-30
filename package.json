@@ -1,0 +1,12 @@
+{
+  "name": "ghost-style-proxy",
+  "version": "1.0.0",
+  "description": "Simple HTTP CORS proxy (ghost / cross proxy style)",
+  "main": "proxy.js",
+  "type": "module",
+  "scripts": {
+    "start": "node proxy.js"
+  },
+  "author": "",
+  "license": "MIT"
+}
