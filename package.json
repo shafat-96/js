@@ -8,5 +8,8 @@
     "start": "node proxy.js"
   },
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "https-proxy-agent": "^7.0.6"
+  }
 }

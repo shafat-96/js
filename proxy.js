@@ -2,9 +2,7 @@ import http from "http";
 import https from "https";
 import { URL } from "url";
 
-const PORT = 3000;
-
-const server = http.createServer(async (req, res) => {
+export default async function handler(req, res) {
   try {
     const urlObj = new URL(req.url, `http://${req.headers.host}`);
     const target = urlObj.searchParams.get("url");
@@ -28,7 +26,7 @@ const server = http.createServer(async (req, res) => {
       },
     };
 
-    const proxyReq = client.request(targetUrl, options, proxyRes => {
+    const proxyReq = client.request(targetUrl, options, (proxyRes) => {
       // CORS
       res.writeHead(proxyRes.statusCode, {
         ...proxyRes.headers,
@@ -40,9 +38,12 @@ const server = http.createServer(async (req, res) => {
       proxyRes.pipe(res);
     });
 
-    proxyReq.on("error", err => {
-      res.writeHead(500);
-      res.end(err.message);
+    proxyReq.on("error", (err) => {
+      console.error("Proxy Error:", err);
+      if (!res.headersSent) {
+        res.writeHead(500);
+        res.end(err.message);
+      }
     });
 
     // Forward body
@@ -53,12 +54,21 @@ const server = http.createServer(async (req, res) => {
     }
 
   } catch (err) {
-    res.writeHead(500);
-    res.end(err.message);
+    console.error("Handler Error:", err);
+    if (!res.headersSent) {
+      res.writeHead(500);
+      res.end(err.message);
+    }
   }
-});
+}
 
-server.listen(PORT, () => {
-  console.log(`Proxy running on http://localhost:${PORT}`);
-  console.log(`Usage: http://localhost:${PORT}/?url=https://example.com`);
-});
+// Local dev server
+import { fileURLToPath } from 'url';
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const PORT = 3000;
+  const server = http.createServer(handler);
+  server.listen(PORT, () => {
+    console.log(`Proxy running on http://localhost:${PORT}`);
+    console.log(`Usage: http://localhost:${PORT}/?url=https://example.com`);
+  });
+}
